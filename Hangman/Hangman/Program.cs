@@ -1,108 +1,244 @@
-﻿namespace HangMan; // here use name of your project
+﻿using System.ComponentModel.Design;
+using System.Threading.Channels;
+
+namespace HangMan; 
 
 class Program
 {
     // No variable declarations in this area!!
+    static string secretWord = "";
+    static char[] validCharachters = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+    static int hangmanIndex = 0; 
+    static string[] hangman = new string[] {@" 
+____
+|/   |
+|   
+|    
+|    
+|    
+|
+|_____
+",
+ @"
+ ____
+|/   |
+|
+|
+|
+|
+|
+|_____
+",
+        @"
+ ____
+|/   |
+|   (_)
+|    
+|    
+|    
+|
+|_____
+",
+        @"
+ ____
+|/   |
+|   (_)
+|    |
+|    |    
+|    
+|
+|_____
+",
+        @"
+ ____
+|/   |
+|   (_)
+|   \|
+|    |
+|    
+|
+|_____
+",
+        @"
+ ____
+|/   |
+|   (_)
+|   \|/
+|    |
+|    
+|
+|_____
+",
+        @"
+ ____
+|/   |
+|   (_)
+|   \|/
+|    |
+|   / 
+|
+|_____
+",
+        @"
+ ____
+|/   |
+|   (_)
+|   \|/
+|    |
+|   / \
+|
+|_____
+",
+        @"
+ ____
+|/   |
+|   (_)
+|   /|\
+|    |
+|   | |
+|
+|_____
+" };
+    static string kelime = "";
     static void Main(string[] args)
     {
         // Variable declarations allowed here
+        
        
+        //int tahminHakkin = 6;
+        List<char> denenenHarfler = new List<char>();
+          
+        
+
         while (true)                     // The game repeats until finished by player 1
         {
             // Variable declarations allowed here
-            ReadSecretWord();            // Player 1: Enter the secret word to be guessed by player 2
+            ReadSecretWord();  // Player 1: Enter the secret word to be guessed by player 2
+            if(secretWord == "")
+            {
+                continue;
+            }
+
             HangTheMan();                // Screen output for a good start
             while (true)                 // Player 2: Make your guesses
-            {
-                ReadOneChar();           // Handle input of one char. 
-                EvaluateTheSituation();  // Game Logic goes here
-                HangTheMan();            // Screen output goes here
+            { 
+               char yourChar = ReadOneChar(); // Handle input of one char. 
+                if(yourChar == ' ')
+                {
+                    continue;
+
+                }
+
+                if (EvaluateTheSituation(secretWord, yourChar)) // Game Logic goes here
+                {
+                    denenenHarfler.Add(yourChar);
+                    var olusanKelime =kelimeOlusturma(denenenHarfler);
+                    Console.WriteLine("");
+                    Console.WriteLine(olusanKelime);
+                }
+                else
+                {
+                   HangTheMan(); // Screen output goes here
+                }
+                
+                
+                           
             }
-            QuitOrRestart(); // Ask if want to quit or start new game
+
+            if (!QuitOrRestart())  // Ask if want to quit or start new game
+            {
+                break;
+            }; 
         }
+        
     }
 
-    static void ReadSecretWord() // Modification of method declaration recommended: Add return value and parameters
-                                 // If there are rules and constraints on allowed secrets (e.g. no digits), check them in here
+    static void ReadSecretWord() 
+    { 
+        Console.WriteLine("enter your secret word");
+        string word = Console.ReadLine();
+         
+        if(word.Length < 3)
+        {
+            Console.WriteLine("3 karakterden az kelime girmeyiniz!");
+            return;
+        }
+        for(int i = 0;  i < word.Length; i++)
+        {
+            if (!validCharachters.Contains(word[i]))
+            {
+                Console.WriteLine("gecersiz karakter girdiniz , lütfen büyük karakter girin ve noktali harfleri kullanmayiniz");
+                return;
+            }
+        }
+        secretWord = word;
+      
+        
+    }
+
+    static string kelimeOlusturma(List<char> tahminEdilenHarfler)
+    {  
+        kelime = "";
+        for(int i = 0; i < secretWord.Length; i++)
+        {
+            if (tahminEdilenHarfler.Contains(secretWord[i]))
+            {
+                kelime +=  secretWord[i];
+            }
+            else
+            {
+               kelime += " _ ";
+            }
+            
+        }
+        return kelime;
+    }
+    
+    static char ReadOneChar() 
     {
-        // Variable declarations allowed here
-        // Console.Write() etc. allowed here!
+        
+        Console.WriteLine(" harf dene");
 
+        char c = Console.ReadKey().KeyChar.ToString().ToUpper().ToCharArray()[0];
+        if (!validCharachters.Contains(c)){
+            Console.WriteLine("gecersiz karakter girdiniz , lütfen büyük karakter girin ve noktali harfleri kullanmayiniz");
+            return ' ';
+        }
+        return c;
+        
     }
-
-    static void ReadOneChar() // Modification of method declaration recommended: Add return value and parameters
-                              // If there are rules and constraints on allowed secrets (e.g. no digits), make sure the input is allowed
+    
+    static bool  EvaluateTheSituation(string word, char harf) 
     {
-        // Variable declarations allowed here
-        // Console.Write() etc. allowed here!
-    }
+        
+       for(int i = 0; i < word.Length; i++)
+        {
+            if (word[i] == harf)
+            {
+                return true;
+            }
 
-    static void EvaluateTheSituation() // Modification of method declaration recommended: Add return value and parameters
-                                       // In here, evaluate the char entered: Is it part of the secret word?
-                                       // Calculate and return the game status (Hit or missed? Where? List and number of missed chars?...)
+        }
+        return false;
+    }
+    
+    static bool QuitOrRestart() 
     {
-        // Variable declarations allowed here
-        // NO Console.Write() etc. in here!
+        Console.WriteLine("devam edecek misin ?");
+        string cevap = Console.ReadLine();
+        if(cevap == "evet")
+        {
+            return true;
+
+        }
+        return false;
     }
 
-    static void QuitOrRestart() // Modification of method declaration recommended: Add return value and parameters
-                                // If there are rules and constraints on allowed secrets (e.g. no digits), check them in here
+    static void HangTheMan() 
+
     {
-        // Variable declarations allowed here
-        // Console.Write() etc. allowed here!
+        Console.Write(hangman[hangmanIndex]);
+        hangmanIndex++;
+
     }
-
-    static void HangTheMan() // Modification of method declaration recommended: Add return value and parameters
-                             // In here, clear the screen and redraw everything reflecting the actual game status
-    {
-        // Variable declarations allowed here
-        // all Console.Write() etc. go here
-    }
-}
-
-//using System.Threading.Channels;
-
-//namespace Hangman
-//{
-//    internal class Program
-//    {
-
-//        static void Main(string[] args)
-
-//        {  
-
-//            while (true)
-//            {   
-//                Console.WriteLine("write your secret word");
-//                string secretWord = ReadTheSecretWord();
-//                Console.WriteLine( "This is your word: " + secretWord );
-//                while (true)
-//                {
-//                    Console.WriteLine("enter your guest letter");
-//                     char letter = ReadOneChar();
-//                    Console.WriteLine("This is your char: " + letter);
-//                    //EvaluateTheSituation();
-//                }
-//            }
-
-
-//        }
-
-
-//        static string ReadTheSecretWord()
-//        {
-//            string word = Console.ReadLine();
-//            return word.ToUpper();
-//        }
-
-//        static char ReadOneChar()
-//        {
-//            char c = Console.ReadKey().KeyChar;
-//            string s = c.ToString().ToUpper();
-//            char bigC = Convert.ToChar(s);
-//            return bigC;
-
-//        }
-
-//    }
-//}
+} 
