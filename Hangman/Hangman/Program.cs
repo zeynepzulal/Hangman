@@ -104,28 +104,30 @@ ____
 |_____
 " };
         string newWord = "";
-
-
-
-
-        //int tahminHakkin = 6;
         List<char> triedChar = new List<char>();
-
 
         while (true)                     // The game repeats until finished by player 1
         {
             // Variable declarations allowed here
             secretWord = ReadSecretWord(validCharachters);  // Player 1: Enter the secret word to be guessed by player 2
+            hangmanIndex = HangTheMan(hangmanIndex, hangman);      // Screen output for a good start
 
-            HangTheMan(hangmanIndex, hangman);                // Screen output for a good start
             while (true)                 // Player 2: Make your guesses
             {
                 char yourChar = ReadOneChar(validCharachters); // Handle input of one char. 
-                if (yourChar == ' ')
-                {
-                    continue;
+                EvaluateTheSituation(secretWord, yourChar, triedChar,secretWord,hangmanIndex,hangman);  // Game Logic goes here
+                HangTheMan(hangmanIndex, hangman);            // Screen output goes here
 
-                }
+            }
+            /*
+            while (true)                 // Player 2: Make your guesses
+            {
+                Console.WriteLine("index: " + hangmanIndex);
+                char yourChar = ReadOneChar(validCharachters); // Handle input of one char. 
+                //if (yourChar == ' ')
+                //{
+                //    continue;
+                //}
                 if (EvaluateTheSituation(secretWord, yourChar)) // Game Logic goes here
                 {
 
@@ -137,152 +139,100 @@ ____
                     {
                         break;
                     }
-
-
                 }
-
                 else
                 {
-                    HangTheMan(hangmanIndex, hangman); // Screen output goes here
+                    hangmanIndex = HangTheMan(hangmanIndex, hangman); // Screen output goes here
                 }
-
             }
+            */
 
-            if (QuitOrRestart())  // Ask if want to quit or start new game
+            QuitOrRestart(); // Ask if want to quit or start new game
+        }
+
+        static string ReadSecretWord(char[] validChar)
+        {
+            while (true)
             {
-                continue;
-            }
-            else
-            {
-                Console.WriteLine("Güle güle...");
-                break;
+                Console.WriteLine("enter your secret word");
+                string word = Console.ReadLine();
+                bool valid = true;
+                word = word.ToUpper();
+
+                if (word.Length < 3)
+                {
+                    Console.WriteLine("3 karakterden az kelime girmeyiniz!");
+                    valid = false;
+                }
+                for (int i = 0; i < word.Length; i++)
+                {
+                    if (!validChar.Contains(word[i]))
+                    {
+                        Console.WriteLine("gecersiz karakter girdiniz , lütfen büyük karakter girin ve noktali harfleri kullanmayiniz");
+                        valid = false;
+                        break;
+                    }
+                }
+                if (!valid)
+                {
+                    continue;
+                }
+                return word;
             }
         }
 
-    }
-
-    static string ReadSecretWord(char[] validChar)
-    {
-        while (true)
+        static char ReadOneChar(char[] validChar)
         {
-            Console.WriteLine("enter your secret word");
-            string word = Console.ReadLine();
-            bool valid = true;
-            word = word.ToUpper();
 
-            if (word.Length < 3)
+            Console.WriteLine(" harf dene");
+
+            char c = Console.ReadKey().KeyChar.ToString().ToUpper().ToCharArray()[0];
+            if (!validChar.Contains(c))
             {
-                Console.WriteLine("3 karakterden az kelime girmeyiniz!");
-                valid = false;
+                Console.WriteLine("gecersiz karakter girdiniz , lütfen büyük karakter girin ve noktali harfleri kullanmayiniz");
+                return ' ';
             }
+
+            return c;
+
+        }
+
+         
+        static void EvaluateTheSituation(string word, char harf,List<char> triedCharachter, string secWrd, int indexHangman, string[] Man)
+         {
+            string recreatedWord = "";
+
             for (int i = 0; i < word.Length; i++)
             {
-                if (!validChar.Contains(word[i]))
+                if (triedCharachter.Contains(secWrd[i]))
                 {
-                    Console.WriteLine("gecersiz karakter girdiniz , lütfen büyük karakter girin ve noktali harfleri kullanmayiniz");
-                    valid = false;
-                    break;
+                    recreatedWord += secWrd[i];
                 }
-            }
-            if (!valid)
-            {
-                continue;
-            }
-            return word;
-        }
-    }
-
-    static char ReadOneChar(char[] validChar)
-    {
-
-        Console.WriteLine(" harf dene");
-
-        char c = Console.ReadKey().KeyChar.ToString().ToUpper().ToCharArray()[0];
-        if (!validChar.Contains(c))
-        {
-            Console.WriteLine("gecersiz karakter girdiniz , lütfen büyük karakter girin ve noktali harfleri kullanmayiniz");
-            return ' ';
-        }
-        return c;
-
-    }
-
-
-    static bool EvaluateTheSituation(string word, char harf)
-    {
-
-        for (int i = 0; i < word.Length; i++)
-        {
-            if (word[i] == harf)
-            {
-                return true;
-
-            }
-        }
-        return false;
-
-    }
-
-    static string recreateTheWord(List<char> triedCharachter, string secWrd, int indexHangman, string[] Man)
-    {
-        string word = "";
-        for (int i = 0; i < secWrd.Length; i++)
-        {
-            if (triedCharachter.Contains(secWrd[i]))
-            {
-                word += secWrd[i];
-            }
-            else
-            {
-                word += " _ ";
-                while (indexHangman < Man.Length)
+                else
                 {
-                    indexHangman++;
+                    recreatedWord += " _ ";
+                    while (indexHangman < Man.Length - 1)
+                    {
+                        indexHangman++;
+                    }
+
                 }
-
+                Console.WriteLine(indexHangman);
+                Console.WriteLine(recreatedWord);
             }
-
         }
-        Console.WriteLine(indexHangman);
-        return word;
-    }
 
-    static void HangTheMan(int indexHangman, string[] Man)
+        
 
-    {
-        Console.Write(Man[indexHangman]);
+        static int HangTheMan(int indexHangman, string[] Man)
 
-    }
-
-    static bool DidYouWin(string newWrd, char[] validChar)
-    {
-        if (newWrd.All(c => validChar.Contains(c)))
         {
-            Console.WriteLine("Congratulations, you won");
-            return true;
+            Console.Write(Man[indexHangman]);
+            return indexHangman;
+
         }
-        return false;
+        
+        static void QuitOrRestart(){}
     }
-
-    static bool QuitOrRestart()
-    {
-        Console.WriteLine("Do you want to continue?");
-        string cevap = Console.ReadLine();
-        if (cevap == "yes")
-        {
-            return true;
-
-        }
-        if (cevap == "no")
-        {
-            return false;
-        }
-        return false;
-
-    }
-
-
-
-
 }
 
