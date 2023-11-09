@@ -95,7 +95,9 @@ ____
 |   | |
 |
 |_____
-" };
+" }; 
+        
+
         while (true)                     // The game repeats until finished by player 1
         {
             // Variable declarations allowed here
@@ -103,23 +105,16 @@ ____
             int hangmanIndex = 0;
             List<char> triedChar = new List<char>();
             string secretWord = ReadSecretWord(validCharachters);  // Player 1: Enter the secret word to be guessed by player 2
-            //HangTheMan(hangmanIndex, hangman);       Screen output for a good start
-
+            int isGameOn = 2;
             while (true)                 // Player 2: Make your guesses
             {
                 char yourChar = ReadOneChar(validCharachters); // Handle input of one char. 
-                int gameStatus = EvaluateTheSituation(secretWord, yourChar, ref triedChar, ref hangmanIndex, hangman);  // Game Logic goes here
-                if (gameStatus == 2)
+                string recreatedWord = EvaluateTheSituation(secretWord, yourChar, ref triedChar, ref hangmanIndex, hangman, ref isGameOn);  // Game Logic goes here
+                HangTheMan(ref hangmanIndex, hangman,  ref isGameOn, recreatedWord, secretWord);            // Screen output goes here
+                if(isGameOn == 1 || isGameOn == 0)
                 {
-                    Console.WriteLine("You won!");
                     break;
                 }
-                else if(gameStatus == 1)
-                {
-                    Console.WriteLine("You lost!");
-                    break;
-                }
-                HangTheMan(ref hangmanIndex, hangman);            // Screen output goes here
             }
             bool AreYouContinue = QuitOrRestart(); // Ask if want to quit or start new game
             if (!AreYouContinue)
@@ -170,7 +165,7 @@ ____
             return c;
         }
 
-        static int EvaluateTheSituation(string word, char letter, ref List<char> triedCharachter, ref int indexHangman, string[] Man)
+        static string EvaluateTheSituation(string word, char letter, ref List<char> triedCharachter, ref int indexHangman, string[] Man, ref int Status)
         {
             string recreatedWord = "";
             triedCharachter.Add(letter);
@@ -185,29 +180,34 @@ ____
                     recreatedWord += " _ ";
                 }
             }
-            if (word.Contains(letter))
-            {
-                Console.WriteLine(" ");
-                Console.WriteLine(recreatedWord);
-            }
-            else
+
+            if (!word.Contains(letter))
             {
                 indexHangman++;
             }
-            if (indexHangman >= Man.Length)
+            if (Man[indexHangman] == Man[Man.Length-1])
             {
-                return 1;
+                Status = 0;
             }
             if (word == recreatedWord)
             {
-                return 2;
+                Status = 1;
             }
-            return 0;
+            return recreatedWord;
         }
 
-        static void HangTheMan(ref int indexHangman, string[] Man)
+        static void HangTheMan(ref int indexHangman, string[] Man, ref int Status, string recreatedWord, string word)
         {
-            Console.Write(Man[indexHangman]);
+            if (Status == 1)
+            {
+                Console.WriteLine("You won!");
+            }
+            if (Status == 0)
+            {
+                Console.WriteLine("You lost! Secret word was " + word);
+            }
+            Console.WriteLine(Man[indexHangman]);
+            Console.WriteLine(recreatedWord);
         }
 
         static bool QuitOrRestart()
